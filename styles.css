@@ -1,0 +1,980 @@
+/* Hermes — Terminal-style interface */
+
+/* Remove Obsidian's default view padding so scrollbar reaches window edge */
+.view-content:has(.hermes-container) {
+  padding: 0 !important;
+}
+
+.hermes-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background: var(--background-primary);
+  font-family: var(--font-monospace);
+  font-size: 13px;
+}
+
+/* Header removed — title and stop moved to status bar */
+
+.hermes-btn-stop {
+  font-family: var(--font-monospace);
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  cursor: pointer;
+  border: 1px solid var(--background-modifier-border);
+  background: transparent;
+  color: var(--text-faint);
+  flex-shrink: 0;
+}
+
+.hermes-btn-stop:hover {
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
+/* Terminal output area */
+.hermes-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.5;
+}
+
+/* Keep text from touching the scrollbar */
+.hermes-message {
+  padding-right: 12px;
+}
+
+/* User input — prompt style */
+.hermes-user {
+  display: flex;
+}
+
+.hermes-bubble-user {
+  background: transparent;
+  padding: 2px 0;
+  width: 100%;
+}
+
+.hermes-prompt-prefix {
+  color: var(--color-green);
+  font-weight: 600;
+  user-select: none;
+}
+
+.hermes-bubble-user .hermes-text {
+  color: var(--text-normal);
+  white-space: pre-wrap;
+  display: inline;
+}
+
+/* Assistant output — plain text flow */
+.hermes-assistant {
+  display: flex;
+}
+
+/* Canonical refusal notice — rendered by Hermes directly when a
+   protected pattern matches, so the authoritative text is visible
+   regardless of how the model paraphrases in its own response.
+   Styled as a distinct alert block (left border + subtle background)
+   so it reads as "Hermes telling you what happened," separate from
+   the conversational flow. */
+.hermes-refusal {
+  display: flex;
+  margin: 8px 0;
+}
+.hermes-bubble-refusal {
+  background: var(--background-secondary);
+  border-left: 3px solid var(--text-warning, var(--color-orange));
+  padding: 10px 14px;
+  border-radius: 4px;
+  width: 100%;
+  line-height: 1.5;
+  color: var(--text-normal);
+  font-size: 14px;
+}
+.hermes-bubble-refusal p {
+  margin: 0 0 8px 0;
+}
+.hermes-bubble-refusal p:last-child {
+  margin-bottom: 0;
+}
+.hermes-bubble-refusal ul {
+  margin: 4px 0 0 0;
+  padding-left: 20px;
+}
+.hermes-bubble-refusal li {
+  margin: 2px 0;
+}
+
+/* G3: collapsed assistant response (shown below a Hermes canonical
+   refusal). The authoritative refusal block is visually primary; the
+   model's paraphrase lives in a collapsed disclosure users can expand
+   if they want to see it. This handles both clean model responses
+   (collapsed = no redundant clutter) and drift cases where the model
+   leaks "hook"/workaround vocabulary (collapsed = hidden by default).
+   Expanding restores normal assistant styling for readability. */
+.hermes-bubble-assistant-collapsed {
+  padding: 2px 0 6px 0;
+}
+.hermes-assistant-details {
+  margin: 0;
+  padding: 0;
+}
+.hermes-assistant-summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 4px 0;
+  list-style: none;
+  user-select: none;
+}
+.hermes-assistant-summary::-webkit-details-marker {
+  display: none;
+}
+.hermes-assistant-summary::before {
+  content: "▸ ";
+  display: inline-block;
+  transition: transform 120ms;
+}
+.hermes-assistant-details[open] .hermes-assistant-summary::before {
+  content: "▾ ";
+}
+.hermes-assistant-summary:hover {
+  color: var(--text-normal);
+}
+.hermes-assistant-body {
+  margin-top: 6px;
+  color: var(--text-normal);
+  line-height: 1.6;
+  padding: 6px 0;
+  border-top: 1px solid var(--background-modifier-border);
+}
+.hermes-assistant-body p {
+  margin: 0 0 6px 0;
+}
+.hermes-assistant-body p:last-child {
+  margin-bottom: 0;
+}
+
+.hermes-bubble-assistant {
+  background: transparent;
+  padding: 2px 0 6px 0;
+  width: 100%;
+  border-bottom: 1px solid var(--background-modifier-border-hover);
+  margin-bottom: 4px;
+}
+
+.hermes-bubble-assistant .hermes-text {
+  color: var(--text-normal);
+  line-height: 1.6;
+}
+
+/* Markdown in output */
+.hermes-bubble-assistant .hermes-text p {
+  margin: 0 0 6px 0;
+}
+
+.hermes-bubble-assistant .hermes-text p:last-child {
+  margin-bottom: 0;
+}
+
+.hermes-bubble-assistant .hermes-text pre {
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 8px 10px;
+  margin: 4px 0;
+  overflow-x: auto;
+  font-size: 12px;
+}
+
+.hermes-bubble-assistant .hermes-text code {
+  font-size: 12px;
+  background: var(--background-secondary);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.hermes-bubble-assistant .hermes-text ul,
+.hermes-bubble-assistant .hermes-text ol {
+  margin: 4px 0;
+  padding-left: 20px;
+}
+
+.hermes-bubble-assistant .hermes-text li {
+  margin: 2px 0;
+}
+
+.hermes-bubble-assistant .hermes-text h1,
+.hermes-bubble-assistant .hermes-text h2,
+.hermes-bubble-assistant .hermes-text h3 {
+  margin: 8px 0 4px 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.hermes-bubble-assistant .hermes-text table {
+  font-size: 12px;
+  border-collapse: collapse;
+  margin: 4px 0;
+}
+
+.hermes-bubble-assistant .hermes-text th,
+.hermes-bubble-assistant .hermes-text td {
+  padding: 3px 8px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+/* Ensure text is selectable in messages */
+.hermes-messages {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* Streaming cursor — block style like a terminal */
+.hermes-streaming::after {
+  content: "\2588";
+  animation: hermes-blink 0.8s step-end infinite;
+  color: var(--text-accent);
+  font-size: 13px;
+}
+
+@keyframes hermes-blink {
+  50% { opacity: 0; }
+}
+
+.hermes-cursor {
+  animation: hermes-blink 0.8s step-end infinite;
+  color: var(--text-accent);
+}
+
+/* ── Autocomplete dropdown ── */
+
+.hermes-autocomplete {
+  position: relative;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-secondary);
+  margin: 0 12px;
+  font-family: var(--font-monospace);
+  font-size: 12px;
+  z-index: 10;
+}
+
+.hermes-ac-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 8px;
+  cursor: pointer;
+  gap: 12px;
+}
+
+.hermes-ac-item:hover,
+.hermes-ac-active {
+  background: var(--background-modifier-hover);
+}
+
+/* When keyboard navigation is active, suppress :hover so a stationary
+   mouse cursor doesn't keep highlighting an item after the keyboard
+   focus has moved away (was bug R6-6). The class is cleared on the
+   first mousemove inside the dropdown. */
+.hermes-autocomplete.hermes-ac-kbnav .hermes-ac-item:hover {
+  background: transparent;
+}
+
+.hermes-ac-cmd {
+  color: var(--text-normal);
+  white-space: nowrap;
+}
+
+.hermes-ac-desc {
+  color: var(--text-faint);
+  font-size: 11px;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Status is shown inline inside .hermes-streaming, cursor blinks after it */
+
+/* System messages */
+.hermes-system {
+  display: flex;
+}
+
+.hermes-system-text {
+  font-size: 11px;
+  color: var(--text-faint);
+  padding: 2px 0;
+}
+
+/* Cost info */
+.hermes-cost {
+  display: flex;
+  padding: 0;
+}
+
+.hermes-cost-text {
+  font-size: 10px;
+  color: var(--text-faint);
+}
+
+/* ── Input toolbar — model / permission / context ── */
+
+.hermes-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-top: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+}
+
+.hermes-toolbar-btn {
+  font-family: var(--font-monospace);
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 1px 4px;
+  border-radius: 3px;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.hermes-toolbar-btn:hover {
+  color: var(--text-normal);
+  background: var(--background-modifier-hover);
+}
+
+.hermes-toolbar-sep {
+  font-size: 10px;
+  color: var(--text-faint);
+  user-select: none;
+}
+
+.hermes-toolbar-spacer {
+  flex: 1;
+}
+
+.hermes-toolbar-item {
+  font-family: var(--font-monospace);
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 1px 4px;
+}
+
+/* Permission mode highlights */
+.hermes-perm-yolo {
+  color: var(--color-red) !important;
+  font-weight: 600;
+}
+
+/* Context meter states */
+.hermes-context-warn {
+  color: var(--color-yellow) !important;
+}
+
+.hermes-context-danger {
+  color: var(--color-red) !important;
+  font-weight: 600;
+}
+
+/* ── Status bar: Hermes: <status>  [Stop] ── */
+.hermes-statusbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px 3px 2px;
+  border-top: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+  min-height: 22px;
+}
+
+.hermes-statusbar-label {
+  font-family: var(--font-monospace);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+}
+
+.hermes-statusbar-text {
+  font-family: var(--font-monospace);
+  font-size: 11px;
+  color: var(--text-accent);
+  font-style: italic;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Input area — terminal prompt ── */
+
+.hermes-input-area {
+  display: flex;
+  gap: 0;
+  padding: 4px 12px 8px 12px;
+  flex-shrink: 0;
+  align-items: flex-end;
+}
+
+.hermes-input-prompt {
+  color: var(--color-green);
+  font-weight: 600;
+  font-family: var(--font-monospace);
+  font-size: 13px;
+  padding: 6px 6px 6px 0;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.hermes-input {
+  flex: 1;
+  resize: none;
+  min-height: 22px;
+  max-height: 150px;
+  padding: 6px 4px;
+  border: none;
+  background: transparent;
+  color: var(--text-normal);
+  font-size: 13px;
+  font-family: var(--font-monospace);
+  line-height: 1.5;
+  overflow-y: auto;
+  outline: none;
+}
+
+.hermes-input::placeholder {
+  color: var(--text-faint);
+}
+
+.hermes-btn-send {
+  display: none;
+}
+
+/* ── Welcome / onboarding panel (chat empty-state when no provider) ── */
+
+.hermes-welcome {
+  margin: 16px 12px;
+  padding: 20px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+}
+
+.hermes-welcome h2 {
+  margin: 0 0 8px 0;
+  font-size: 1.4em;
+}
+
+.hermes-welcome > p {
+  margin: 0 0 16px 0;
+  color: var(--text-muted);
+  font-size: 0.95em;
+}
+
+.hermes-welcome-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.hermes-welcome-card {
+  padding: 14px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+}
+
+.hermes-welcome-card h3 {
+  margin: 0 0 6px 0;
+  font-size: 1em;
+}
+
+.hermes-welcome-card p {
+  margin: 0 0 12px 0;
+  color: var(--text-muted);
+  font-size: 0.9em;
+  flex-grow: 1;
+}
+
+.hermes-welcome-card a,
+.hermes-welcome-card button {
+  align-self: flex-start;
+  font-size: 0.9em;
+}
+
+.hermes-welcome-dismiss {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 0.85em;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+
+.hermes-welcome-dismiss:hover {
+  color: var(--text-muted);
+  text-decoration: underline;
+}
+
+/* ── Settings quick-start callout ── */
+
+.hermes-setting-callout {
+  margin: 0 0 20px 0;
+  padding: 12px 14px;
+  background: var(--background-secondary);
+  border-left: 3px solid var(--interactive-accent);
+  border-radius: 4px;
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
+/* ── Help modal table ─────────────────────────────────────────────── */
+
+.hermes-help-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  font-size: 0.9em;
+}
+
+.hermes-help-table td {
+  padding: 4px 8px;
+  vertical-align: top;
+  border-bottom: 1px solid var(--background-modifier-border-hover);
+}
+
+.hermes-help-table tr:last-child td {
+  border-bottom: none;
+}
+
+.hermes-help-key {
+  font-family: var(--font-monospace);
+  color: var(--text-accent);
+  white-space: nowrap;
+  width: 1%;
+}
+
+.hermes-welcome-manual {
+  margin-top: 12px;
+  font-size: 0.85em;
+  color: var(--text-muted);
+}
+
+/* ── Permission modal summary wrap ──────────────────────────────────── */
+
+/* The summary paragraph embeds the full target (file path or shell command).
+   Long no-space payloads (e.g., base64 URLs) would otherwise overflow the
+   modal horizontally and hide the suffix off-screen — a user approving the
+   command would see only the benign-looking prefix. Break on any character
+   so the entire target stays visible. */
+.hermes-permission-summary {
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+/* ── Protected-operation warning banner ─────────────────────────────── */
+
+/* Rendered at the top of the permission modal when the target path or
+   command matches a protected pattern (see permission-gate.js). The
+   banner's role is to break the user's habit of auto-clicking "Allow"
+   on routine modals — a distinct red accent signals "stop and read." */
+.hermes-permission-warning {
+  border-left: 4px solid var(--color-red);
+  background: #fdf4f4;
+  padding: 12px 14px;
+  margin: 0 0 14px 0;
+  border-radius: 4px;
+}
+
+.hermes-permission-warning p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #1a1a1a;
+}
+
+.hermes-permission-warning-body {
+  font-weight: normal;
+}
+
+/* Consequence line in the protected-operation modal — plain-English
+   explanation of what each button does. Subtle styling so it doesn't
+   compete with the red warning banner but is clearly readable. */
+.hermes-permission-consequence {
+  margin: 8px 0 12px 0;
+  padding: 8px 10px;
+  background: var(--background-secondary);
+  border-left: 3px solid var(--text-muted);
+  border-radius: 3px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-normal);
+}
+
+/* The <details> element holding the technical data for a protected
+   operation. Closed by default — the user sees the plain-language
+   warning first, expands only if they want specifics. */
+.hermes-permission-technical {
+  margin: 10px 0 12px 0;
+  font-size: 12px;
+  border-top: 1px dashed var(--background-modifier-border);
+  padding-top: 8px;
+}
+
+.hermes-permission-technical > summary {
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  user-select: none;
+  margin-bottom: 4px;
+}
+
+.hermes-permission-technical > summary:hover {
+  color: var(--text-normal);
+}
+
+/* ── Settings-tab section styling ──────────────────────────────────── */
+
+/* Section heading — h3 + optional info icon, same pattern across
+   Provider / Defaults / Security / Diagnostics so sections feel
+   like siblings instead of a grab-bag of visual styles. */
+.hermes-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 24px 0 8px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+.hermes-section-heading h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+/* When a section heading carries a master toggle, we render it as an
+   Obsidian Setting row so the toggle lands in `.setting-item-control` —
+   the same position every sub-toggle below uses, yielding pixel-perfect
+   right-edge alignment. This rule styles the Setting's name + desc
+   cluster to read like an h3 header (larger, bold) so it still looks
+   like a section heading rather than a sub-item row. */
+.hermes-section-heading-row {
+  margin: 24px 0 8px 0;
+  padding-bottom: 6px;
+  padding-top: 6px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  /* Obsidian's default .setting-item has its own border; we replace
+     it with ours so the visual weight matches the plain h3 heading. */
+  border-top: none;
+}
+.hermes-section-heading-row .setting-item-name {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+.hermes-section-heading-row .setting-item-description:empty {
+  display: none;
+}
+
+/* Container for sub-items under a section heading with a master toggle.
+   When the master is OFF, the whole container dims and stops responding
+   to clicks — the UX pattern for "feature is visible but inert." */
+.hermes-protected-children {
+  transition: opacity 120ms ease-in-out;
+}
+.hermes-section-disabled {
+  opacity: 0.45;
+  pointer-events: none;
+  /* Inputs inside still get :disabled styling from Obsidian; pointer-
+     events:none on the parent stops clicks from reaching them in case
+     any caller forgot to also set `disabled` on the element itself. */
+}
+
+/* Per-feature subsection under Security — just a container. No
+   card background, no extra border; spacing comes from the flow. */
+.hermes-protected-section {
+  margin: 16px 0;
+}
+
+.hermes-protected-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  /* Left indent so the collapsible rule groups read as children of
+     the parent Security row above. Matches the visual nesting of a
+     disclosure list — without the indent the details sit flush with
+     the container edge and the hierarchy is ambiguous. */
+  margin: 6px 0 0 0;
+  padding-left: 20px;
+}
+
+.hermes-protected-group-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin: 8px 0 2px 0;
+}
+
+/* Collapsible built-in / custom rule groups. Native <details> gets
+   the disclosure triangle from the browser; we only need to tighten
+   spacing and muted-color the summary so it reads like a label, not
+   a clickable heading. */
+.hermes-protected-details {
+  margin: 8px 0 0 0;
+}
+.hermes-protected-summary {
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 2px 0;
+  user-select: none;
+}
+.hermes-protected-summary:hover {
+  color: var(--text-normal);
+}
+.hermes-protected-details[open] > .hermes-protected-summary {
+  margin-bottom: 4px;
+}
+
+/* Inline action-button row for the untrusted-content-tagging panel.
+   Reads as a toolbar rather than three separate Setting rows with
+   their own titles. Left indent matches .hermes-protected-list so
+   the toolbar nests visually under the Untrusted-content tagging
+   row above, same parent-child hierarchy as the rule disclosures. */
+.hermes-provenance-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 6px 0 0 0;
+  padding-left: 20px;
+}
+.hermes-provenance-actions button {
+  padding: 4px 10px;
+}
+
+/* Info icon. Small circled "i" that's easy to click and obviously
+   interactive. Hover reveals the descriptive tooltip; click opens
+   the linked MANUAL.md section. Styled as a link (accent color on
+   hover) to match other inline affordances. */
+.hermes-info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--text-muted);
+  color: var(--text-muted);
+  font-family: var(--font-ui, inherit);
+  font-size: 10px;
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.hermes-info-icon:hover {
+  border-color: var(--interactive-accent);
+  color: var(--interactive-accent);
+  text-decoration: none;
+}
+.hermes-info-icon-glyph {
+  /* Nudge the "i" up a hair so it's visually centered in the
+     circle (descenderless character sits low by default). */
+  margin-top: -1px;
+}
+
+/* Variant used by `_descToTooltip` — renders inline after the
+   Setting's name text (inside .setting-item-name), so it needs a
+   small left gap from the label. Vertically aligned to the text
+   baseline rather than flexbox-centered because nameEl doesn't
+   use flex. */
+.hermes-info-icon-inline {
+  margin-left: 6px;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+}
+
+.hermes-protected-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+  cursor: pointer;
+}
+
+.hermes-protected-row code {
+  font-size: 12px;
+  font-family: var(--font-monospace);
+  padding: 1px 6px;
+  background: var(--background-secondary);
+  border-radius: 3px;
+  flex: 1;
+  word-break: break-all;
+}
+
+/* CSS-only tooltip on hover over a protected-pattern row. We render it
+   ourselves (rather than Obsidian's setTooltip) so the colors are under
+   our control — the user wanted a light background with dark text for
+   readability, regardless of Obsidian's light/dark theme. */
+
+/* Tooltips for settings-tab elements use Obsidian's native tooltip
+   (registered via the `setTooltip` API in plugin.js). No custom
+   CSS popup here — two systems firing on the same element caused
+   the "two popups, one light one dark" bug previously. Override
+   Obsidian's tooltip text-align to left so long multi-paragraph
+   tooltips read comfortably. */
+.tooltip {
+  text-align: left;
+  white-space: pre-line;
+  max-width: 440px;
+}
+
+/* Inline CLI-path status pill. Renders to the right of the
+   "Claude CLI path" label so the detected path (or "Not detected"
+   badge) stays on the same line as the setting name — saves the
+   full-width row a separate status line used to consume. */
+.hermes-cli-status-pill {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 1px 8px;
+  font-size: 11.5px;
+  font-family: var(--font-monospace);
+  font-weight: 500;
+  border-radius: 10px;
+  vertical-align: middle;
+  white-space: nowrap;
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+}
+.hermes-cli-status-pill.is-ok {
+  color: var(--color-green);
+  background: color-mix(in oklab, var(--color-green) 12%, transparent);
+}
+.hermes-cli-status-pill.is-warn {
+  color: var(--color-orange, var(--color-yellow));
+  background: color-mix(in oklab, var(--color-orange, var(--color-yellow)) 14%, transparent);
+}
+
+/* Version footer in the settings tab — disable/enable Hermes and this
+   string reflects the currently-loaded plugin code immediately, without
+   needing an Obsidian restart (the Community Plugins list caches
+   manifest.json at app startup and only re-reads on full restart). */
+.hermes-settings-version {
+  margin-top: 24px;
+  padding: 8px 0;
+  border-top: 1px solid var(--background-modifier-border);
+  font-size: 11px;
+  color: var(--text-faint);
+  font-family: var(--font-monospace);
+  text-align: left;
+}
+
+.hermes-protected-row-custom {
+  cursor: default;
+}
+
+.hermes-protected-remove {
+  background: transparent;
+  border: 1px solid var(--background-modifier-border);
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 1px 8px;
+  border-radius: 3px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.hermes-protected-remove:hover {
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
+.hermes-protected-empty {
+  font-size: 12px;
+  color: var(--text-faint);
+  font-style: italic;
+  margin: 2px 0;
+}
+
+.hermes-protected-custom-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 4px 0 8px 0;
+  line-height: 1.4;
+}
+
+.hermes-protected-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.hermes-protected-add-input {
+  flex: 1;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-family: var(--font-monospace);
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 3px;
+  color: var(--text-normal);
+}
+
+.hermes-protected-add-input:focus {
+  outline: none;
+  border-color: var(--interactive-accent);
+}
+
+.hermes-protected-add-btn {
+  padding: 4px 12px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border: none;
+  border-radius: 3px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.hermes-protected-add-btn:hover {
+  background: var(--interactive-accent-hover);
+}
+
+.hermes-protected-add-error {
+  margin-left: 8px;
+  color: var(--color-red);
+  font-size: 11px;
+}
+
+/* (CLI status is now rendered inline as `.hermes-cli-status-pill`
+   next to the "Claude CLI path" label — see the pill rule near the
+   top of the settings-tab block.) */
